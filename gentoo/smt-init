@@ -1,0 +1,35 @@
+#!/sbin/runscript
+# Copyright (c) 2012 Petr Morávek (xificurk@gmail.com)
+# Distributed under the terms of the GNU Lesser General Public License v3
+# $Header: $
+
+depend() {
+	after cupsd iptables lm_sensors net
+}
+
+start() {
+	# Display a message to the user
+	ebegin "Starting smt daemon"
+
+	SMT_OPTS=${SMT_OPTS:-""}
+	DAEMON_OPTS=""
+	if [[ -n "$SMT_USER" ]]; then
+		DAEMON_OPTS="-u $SMT_USER"
+	fi
+
+	# Start the process as a daemon and record the pid number
+	start-stop-daemon --start -b --pidfile "/var/run/smt.pid" --make-pidfile -1 /var/log/smt.log -2 /var/log/smt.log $DAEMON_OPTS --exec /usr/bin/smtd -- $SMT_OPTS
+
+	# Output success or failure
+	eend $?
+}
+
+
+stop() {
+	# Display a message to the user
+	ebegin "Stopping smt daemon"
+	# Stop the daemon using the pid recorded from the start() function
+	start-stop-daemon --stop --pidfile "/var/run/smt.pid"
+	# Ooutput success or failure
+	eend $?
+}

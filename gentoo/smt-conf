@@ -1,0 +1,7 @@
+# Run the daemon under this user.
+# WARNING: You must run SMT under root if you want to use some plugins
+# (e.g. any S.M.A.R.T. data).
+#SMT_USER=root
+
+# Additional options to pass to the SMT. See smt --help for more info.
+#SMT_OPTS=""

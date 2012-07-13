@@ -1,0 +1,8 @@
+/var/log/smt.log {
+    weekly
+    rotate 4
+    compress
+    copytruncate
+    missingok
+    notifempty
+}
