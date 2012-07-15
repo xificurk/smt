@@ -43,6 +43,7 @@ plugins.append(loadavg)
 # Some plugins require manual configuration, see examples below.
 """
 plugins.append(smt.plugins.hddtemp.HDDTempPlugin(("/dev/sda",)))
+plugins.append(smt.plugins.sensors.SensorsPlugin(("CPU Temp",)))
 """
 
 # NOTE: In this file you can define your own plugin classes and use them.
