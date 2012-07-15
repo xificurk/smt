@@ -29,3 +29,15 @@ for plugin_name in smt.plugins.__all__:
     except Exception as e:
         # Some other exception was raised, let's log it.
         log.exception(e)
+
+# You can configure the plugins by hand as well.
+"""
+# First initialize the plugin
+loadavg = smt.plugins.loadavg.LoadAvgPlugin()
+# Adjust the settings as you wish, e.g. set warning bound:
+loadavg.get_datasource("5min").warning = ":5"
+# And finally append it to plugins list
+plugins.append(loadavg)
+"""
+
+# NOTE: In this file you can define your own plugin classes and use them.
