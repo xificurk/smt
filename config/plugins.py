@@ -40,4 +40,9 @@ loadavg.get_datasource("5min").warning = ":5"
 plugins.append(loadavg)
 """
 
+# Some plugins require manual configuration, see examples below.
+"""
+plugins.append(smt.plugins.hddtemp.HDDTempPlugin(("/dev/sda",)))
+"""
+
 # NOTE: In this file you can define your own plugin classes and use them.
