@@ -31,3 +31,4 @@ Requirements
 ============================================================================
 * Python 3.1 or newer
 * RRDtool with python bindings
+* The base set of plugins requires various *nix tools, e.g. who.
