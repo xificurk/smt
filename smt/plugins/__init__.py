@@ -9,10 +9,12 @@ __copyright__ = "Copyright (C) 2012 Petr Morávek"
 __license__ = "LGPL 3.0"
 
 
+from smt.plugins.loadavg import LoadAvgPlugin
 from smt.plugins.users import UsersPlugin
 from smt.plugins.usage import UsagePlugin
 
 
-__all__ = ["UsersPlugin",
+__all__ = ["LoadAvgPlugin",
+           "UsersPlugin",
            "UsagePlugin",
           ]
