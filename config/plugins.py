@@ -44,6 +44,7 @@ plugins.append(loadavg)
 """
 plugins.append(smt.plugins.hddtemp.HDDTempPlugin(("/dev/sda",)))
 plugins.append(smt.plugins.sensors.SensorsPlugin(("CPU Temp",)))
+plugins.append(smt.plugins.smart.SmartPlugin("sda", ("Start_Stop_Count", "Reallocated_Sector_Ct")))
 """
 
 # NOTE: In this file you can define your own plugin classes and use them.

@@ -14,6 +14,7 @@ from smt.plugins.hddtemp import HDDTempPlugin
 from smt.plugins.loadavg import LoadAvgPlugin
 from smt.plugins.nvidia import NvidiaTempPlugin
 from smt.plugins.sensors import SensorsPlugin
+from smt.plugins.smart import SmartPlugin
 from smt.plugins.users import UsersPlugin
 from smt.plugins.usage import UsagePlugin
 
@@ -23,6 +24,7 @@ __all__ = ["DfPlugin",
            "LoadAvgPlugin",
            "NvidiaTempPlugin",
            "SensorsPlugin",
+           "SmartPlugin",
            "UsersPlugin",
            "UsagePlugin",
           ]
