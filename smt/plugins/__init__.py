@@ -13,6 +13,7 @@ from smt.plugins.cpu import CPUPlugin
 from smt.plugins.df import DfPlugin
 from smt.plugins.hddtemp import HDDTempPlugin
 from smt.plugins.loadavg import LoadAvgPlugin
+from smt.plugins.memory import MemoryPlugin
 from smt.plugins.net import NetTrafficPlugin
 from smt.plugins.nvidia import NvidiaTempPlugin
 from smt.plugins.sensors import SensorsPlugin
@@ -25,6 +26,7 @@ __all__ = ["CPUPlugin",
            "DfPlugin",
            "HDDTempPlugin",
            "LoadAvgPlugin",
+           "MemoryPlugin",
            "NetTrafficPlugin",
            "NvidiaTempPlugin",
            "SensorsPlugin",
