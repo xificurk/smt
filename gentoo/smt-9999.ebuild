@@ -31,6 +31,7 @@ src_install() {
 
 	# install scripts
 	python-distutils-ng_newscript bin/smtd smtd
+	python-distutils-ng_newscript bin/smt-limits smt-limits
 
 	# install example plugins configuration
 	keepdir /etc/smt/plugins
