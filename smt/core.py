@@ -10,6 +10,7 @@ Classes:
     ArchiveGroup --- Generator of RRA definitions from list of CFs and template names.
     Sensor      --- Class managing the creation and updates of RRD and metadata files.
     Plugin      --- Base plugin class.
+    Limits      --- Checking for a datasource values outside allowed range.
 
 """
 
@@ -21,8 +22,8 @@ __license__ = "LGPL 3.0"
 from abc import ABCMeta, abstractproperty, abstractmethod
 import json
 import logging
-from math import ceil
-import os.path
+from math import ceil, isnan
+import os, os.path
 import re
 import subprocess
 import threading
@@ -34,6 +35,7 @@ __all__ = ["call",
            "ArchiveGroup",
            "Datasource",
            "Plugin",
+           "Limits",
           ]
 
 
@@ -60,8 +62,10 @@ class rrdtool(object):
     API for the rrdtool commands (incomplete).
 
     Class methods:
+        call        --- Call general rrdtool command.
         create      --- Create RRD file.
         update      --- Update RRD file.
+        fetch       --- Fetch data from RRD file.
 
     """
 
@@ -70,7 +74,7 @@ class rrdtool(object):
     @classmethod
     def call(cls, command, *args):
         """
-        Call general rrdtool command
+        Call general rrdtool command.
 
         Arguments:
             command     --- Command name.
@@ -107,6 +111,28 @@ class rrdtool(object):
 
         """
         return cls.call("update", filename, *args)
+
+    @classmethod
+    def fetch(cls, filename, cf="AVERAGE", *args):
+        """
+        Fetch data from RRD file.
+
+        Arguments:
+            filename    --- Path to RRD file.
+            cf          --- CF to use when fetching data from the file, default 'AVERAGE'.
+            *args       --- Options/arguments to rrdtool create command.
+
+        """
+        data = {}
+        for row in cls.call("fetch", filename, cf, *args).split("\n")[2:]:
+            row = row.strip().split(" ")
+            if len(row) < 2:
+                break
+            timestamp = int(row.pop(0)[:-1])
+            values = tuple(float(v) for v in row)
+            data[timestamp] = values
+        return data
+
 
 
 
@@ -326,22 +352,19 @@ class Datasource(object):
 
     def _parse_interval(self, interval):
         """ Parses 'min:max', 'min:', ':max', 'max', '' into dictionary """
-        res = {}
-        if len(interval) == 0:
-            return res
         if interval.count(":") > 1:
             raise ValueError("Invalid interval value {!r}.".format(interval))
         if interval.startswith(":"):
             interval = interval[1:]
-        if ":" not in interval:
-            res["max"] = float(interval)
+        if len(interval) == 0:
+            return {}
+        elif ":" not in interval:
+            return {"max": float(interval)}
         elif interval.endswith(":"):
-            res["min"] = float(interval[:-1])
+            return {"min": float(interval[:-1])}
         else:
             min_, max_ = interval.split(":")
-            res["min"] = float(min_)
-            res["max"] = float(max_)
-        return res
+            return {"min": float(min_), "max": float(max_)}
 
     def create_metadata(self):
         """
@@ -350,6 +373,7 @@ class Datasource(object):
         """
         self.plugin.log.info("Creating metadata file datasource {}.".format(self.name))
         metadata = {}
+        metadata["update_interval"] = self.plugin.update_interval
         metadata["title"] = str(self.title)
         metadata["description"] = str(self.description)
         metadata["limits"] = {}
@@ -557,3 +581,128 @@ class Plugin(threading.Thread, metaclass=ABCMeta):
                 self.log.error("Ignoring the exception and reseting the timer.")
                 wait_time = self.update_interval
         self.log.info("Plugin {} exiting.".format(self.name))
+
+
+
+class Limits(object):
+    """
+    Checking for a datasource values outside allowed range.
+
+    Properties:
+        data_dir    --- Path to directory where RRD and metadata files are stored.
+        state_dir   --- Path to directory where to store the state of datasources.
+        unknown_skip --- Number of allowed unknown values at the end of dataset.
+
+    Methods:
+        get_limits  --- Load the limits of specified datasource from metadata file.
+        get_value   --- Get the last value of specified datasource (ignoring unknown_skip last NaN values).
+        check       --- Check the specified datasource for state change.
+        check_all   --- Check all datasources and return dictionary with all datasources that have changed the state.
+
+    """
+
+    def __init__(self, data_dir, state_dir, unknown_skip=3):
+        """
+        Arguments:
+            data_dir    --- Path to directory where RRD and metadata files are stored.
+            state_dir   --- Path to directory where to store the state of datasources.
+
+        Keyworded arguments:
+            unknown_skip --- Number of allowed unknown values at the end of dataset.
+
+        """
+        self.log = logging.getLogger("smt.limits")
+        self.data_dir = data_dir
+        self.state_dir = state_dir
+        self.unknown_skip = unknown_skip
+
+    def get_limits(self, path):
+        """
+        Load the limits of specified datasource from metadata file.
+
+        Arguments:
+            path        --- Path to the metadata file.
+
+        """
+        with open(path, "r", encoding="utf-8") as fp:
+            metadata = json.load(fp)
+        limits = dict(filter(lambda x: len(x[1]) > 0, metadata["limits"].items()))
+        return limits
+
+    def get_value(self, path):
+        """
+        Get the last value of specified datasource (ignoring unknown_skip last NaN values).
+
+        Arguments:
+            path        --- Path to the RRD file.
+
+        """
+        data = rrdtool.fetch(path)
+        value = float('nan')
+        skipped = 0
+        for timestamp in reversed(sorted(data.keys())):
+            value = data[timestamp][-1]
+            if not (isnan(value) and skipped < self.unknown_skip):
+                break
+            skipped += 1
+        return value
+
+    def check(self, name):
+        """
+        Check the specified datasource for state change.
+
+        Arguments:
+            name        --- Name of the datasource.
+
+        """
+        limits = self.get_limits(os.path.join(self.data_dir, "{}.json".format(name)))
+        if len(limits) == 0:
+            raise ValueError("Could not find any limits for datasource {!r}.".format(name))
+        value = self.get_value(os.path.join(self.data_dir, "{}.rrd".format(name)))
+
+        state_file = os.path.join(self.state_dir, "{}.txt".format(name))
+        if os.path.isfile(state_file):
+            with open(state_file) as fp:
+                old_state = fp.read()
+            if old_state not in ("NORM", "WARN", "CRIT", "UNKN"):
+                # Corrupted state file
+                self.log.warn("{} state file contained corrupted state value {!r}.".format(state_file, old_state))
+                old_state = "UNKN"
+        else:
+            old_state = "NORM"
+
+        if isnan(value):
+            state = "UNKN"
+        elif "warning" in limits and (("min" in limits["warning"] and value < limits["warning"]["min"]) or ("max" in limits["warning"] and value > limits["warning"]["max"])):
+            state = "WARN"
+        elif "critical" in limits and (("min" in limits["critical"] and value < limits["critical"]["min"]) or ("max" in limits["critical"] and value > limits["critical"]["max"])):
+            state = "CRIT"
+        else:
+            state = "NORM"
+
+        if state != old_state:
+            with open(state_file, "w") as fp:
+                fp.write(state)
+
+        return (old_state, state, value)
+
+    def check_all(self):
+        """
+        Check all datasources and return dictionary with all datasources that have changed the state.
+
+        """
+        result = {}
+        for filename in os.listdir(self.data_dir):
+            if not filename.endswith(".json"):
+                continue
+            name = filename[:-5]
+            try:
+                old_state, state, value = self.check(name)
+                if old_state != state:
+                    result[name] = (old_state, state, value)
+            except ValueError:
+                pass
+            except Exception as e:
+                self.log.exception(e)
+                self.log.error("Could not check the limits of datasource {!r}.".format(name))
+        return result
