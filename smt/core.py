@@ -69,6 +69,9 @@ class rrdtool(object):
 
     """
 
+    def __new__(cls, *p, **k):
+        raise TypeError("This class cannot be instantionalized.")
+
     log = logging.getLogger("rrdtool")
 
     @classmethod
@@ -132,7 +135,6 @@ class rrdtool(object):
             values = tuple(float(v) for v in row)
             data[timestamp] = values
         return data
-
 
 
 
