@@ -1,5 +1,8 @@
 CHANGES
 ============================================================================
 
+Release 0.1.1 (2012-08-02)
+    [FIX] Bug with shortening update intervals.
+
 Release 0.1.0 (2012-07-23)
     [CHG] First release.

@@ -12,7 +12,7 @@ __author__ = "Petr Morávek (xificurk@gmail.com)"
 __copyright__ = "Copyright (C) 2012 Petr Morávek"
 __license__ = "LGPL 3.0"
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 import smt.core as core

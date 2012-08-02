@@ -572,12 +572,11 @@ class Plugin(threading.Thread, metaclass=ABCMeta):
         """
         self.log.info("Plugin {} starting.".format(self.name))
         wait_time = 5
-        self.last_update = time.time() - self.update_interval
         while not self.stop.wait(wait_time):
             try:
-                self.update()
-                wait_time = min(time.time() - self.last_update, self.update_interval)
                 self.last_update = time.time()
+                self.update()
+                wait_time = max(1, self.update_interval - (time.time() - self.last_update))
             except Exception as e:
                 self.log.exception(e)
                 self.log.error("Ignoring the exception and reseting the timer.")
