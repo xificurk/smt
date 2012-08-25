@@ -10,7 +10,7 @@ setup(
     version = version,
     description = "Simple Monitoring Tool",
     author = "Petr Morávek",
-    author_email = "xificurk@gmail.com",
+    author_email = "petr@pada.cz",
     license = "LGL-3",
     url = "http://github.com/xificurk/smt",
     packages = ["smt", "smt.plugins"],
