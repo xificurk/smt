@@ -306,7 +306,7 @@ class Datasource(object):
         self.name = name
         self.safe_name = re.sub("[^A-Za-z0-9_-]", "_", kwargs.get("safe_name", name))
         if self.name in plugin.datasource_names:
-            raise Value("Datasource with name {!r} already exists in this plugin.".format(self.name))
+            raise ValueError("Datasource with name {!r} already exists in this plugin.".format(self.name))
         if self.safe_name in plugin.datasource_safe_names:
             raise ValueError("Datasource with safe_name {!r} already exists in this plugin.".format(self.safe_name))
         plugin._datasources.append(self)
