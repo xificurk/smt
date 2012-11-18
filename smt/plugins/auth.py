@@ -68,10 +68,10 @@ class AuthFailPlugin(Plugin):
         conf = {"min_": 0, "unknown": 0, "archives": [ArchiveGroup(cfs=("AVERAGE",))]}
         for name in methods:
             description = "Authentication failures using {}.".format(name)
-            self.add_datasource(name, "COUNTER", description=description, **conf)
+            self.add_datasource(name, "DERIVE", description=description, **conf)
         if len(methods) > 0:
-            self.add_datasource("other", "COUNTER", description="Other authentication failures.", **conf)
-        self.add_datasource("total", "COUNTER", description="Total authentication failures.", warning=self.warning, critical=self.critical, **conf)
+            self.add_datasource("other", "DERIVE", description="Other authentication failures.", **conf)
+        self.add_datasource("total", "DERIVE", description="Total authentication failures.", warning=self.warning, critical=self.critical, **conf)
 
     def read_data(self):
         """
