@@ -1,6 +1,10 @@
 CHANGES
 ============================================================================
 
+Release 0.1.2 (2012-11-21)
+    [CHG] Provide more info about datasources when checking their limits.
+    [ADD] AuthFail plugin.
+
 Release 0.1.1 (2012-08-02)
     [FIX] Bug with shortening update intervals.
 
