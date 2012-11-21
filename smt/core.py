@@ -82,7 +82,7 @@ class rrdtool(object):
         Arguments:
             command     --- Command name.
             *args       --- Options/arguments to rrdtool create command.
-
+30
         """
         cls.log.debug("Calling rrdtool {} {}".format(command, " ".join(args)))
         try:
@@ -595,7 +595,7 @@ class Limits(object):
         unknown_skip --- Number of allowed unknown values at the end of dataset.
 
     Methods:
-        get_limits  --- Load the limits of specified datasource from metadata file.
+        get_metadata --- Load the metadata of specified datasource from metadata file.
         get_value   --- Get the last value of specified datasource (ignoring unknown_skip last NaN values).
         check       --- Check the specified datasource for state change.
         check_all   --- Check all datasources and return dictionary with all datasources that have changed the state.
@@ -617,9 +617,9 @@ class Limits(object):
         self.state_dir = state_dir
         self.unknown_skip = unknown_skip
 
-    def get_limits(self, path):
+    def get_metadata(self, path):
         """
-        Load the limits of specified datasource from metadata file.
+        Load the metadata of specified datasource from metadata file.
 
         Arguments:
             path        --- Path to the metadata file.
@@ -627,8 +627,8 @@ class Limits(object):
         """
         with open(path, "r", encoding="utf-8") as fp:
             metadata = json.load(fp)
-        limits = dict(filter(lambda x: len(x[1]) > 0, metadata["limits"].items()))
-        return limits
+        metadata["limits"] = dict(filter(lambda x: len(x[1]) > 0, metadata["limits"].items()))
+        return metadata
 
     def get_value(self, path):
         """
@@ -656,7 +656,8 @@ class Limits(object):
             name        --- Name of the datasource.
 
         """
-        limits = self.get_limits(os.path.join(self.data_dir, "{}.json".format(name)))
+        metadata = self.get_metadata(os.path.join(self.data_dir, "{}.json".format(name)))
+        limits = metadata["limits"]
         if len(limits) == 0:
             raise ValueError("Could not find any limits for datasource {!r}.".format(name))
         value = self.get_value(os.path.join(self.data_dir, "{}.rrd".format(name)))
@@ -685,7 +686,7 @@ class Limits(object):
             with open(state_file, "w") as fp:
                 fp.write(state)
 
-        return (old_state, state, value)
+        return (old_state, state, value, metadata)
 
     def check_all(self):
         """
@@ -698,9 +699,9 @@ class Limits(object):
                 continue
             name = filename[:-5]
             try:
-                old_state, state, value = self.check(name)
+                old_state, state, value, metadata = self.check(name)
                 if old_state != state:
-                    result[name] = (old_state, state, value)
+                    result[name] = (old_state, state, value, metadata)
             except ValueError:
                 pass
             except Exception as e:

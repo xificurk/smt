@@ -53,5 +53,5 @@ if __name__ == "__main__":
 
     print("old state   new state      value    datasource name")
     limits = smt.core.Limits(data_dir, state_dir, opts.unknown_skip)
-    for name, (old_state, state, value) in limits.check_all().items():
+    for name, (old_state, state, value, metadata) in limits.check_all().items():
         print("{:12}{:12}{:8.3g}    {}".format(old_state, state, value, name))
