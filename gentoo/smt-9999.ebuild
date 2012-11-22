@@ -5,9 +5,9 @@
 EAPI="4"
 
 EGIT_REPO_URI="git://github.com/xificurk/smt.git"
-PYTHON_COMPAT="python3_1 python3_2"
+PYTHON_COMPAT=( python3_1 python3_2 )
 
-inherit python-distutils-ng git-2 user
+inherit distutils-r1 git-2 user
 
 DESCRIPTION="Simple monitoring tool for various sensors."
 HOMEPAGE="http://github.com/xificurk/smt"
@@ -20,18 +20,29 @@ IUSE=""
 DEPEND=""
 RDEPEND="net-analyzer/rrdtool"
 
+DOCS=( README CHANGES )
+
 
 pkg_setup() {
 	enewgroup smt
 	enewuser smt -1 -1 /var/lib/smt smt
 }
 
-src_install() {
-	python-distutils-ng_src_install
+python_install() {
+	distutils-r1_python_install
 
 	# install scripts
-	python-distutils-ng_newscript bin/smtd smtd
-	python-distutils-ng_newscript bin/smt-limits smt-limits
+	local python_scriptroot=/usr/sbin
+	python_doscript bin/smtd
+	fowners smt:smt "${python_scriptroot}/smtd-${EPYTHON}"
+	fperms 750 "${python_scriptroot}/smtd-${EPYTHON}"
+	python_doscript bin/smt-limits
+	fowners smt:smt "${python_scriptroot}/smt-limits-${EPYTHON}"
+	fperms 750 "${python_scriptroot}/smt-limits-${EPYTHON}"
+}
+
+src_install() {
+	distutils-r1_src_install
 
 	# install example plugins configuration
 	keepdir /etc/smt/plugins
@@ -42,7 +53,7 @@ src_install() {
 	newinitd gentoo/smt-init smt
 	newconfd gentoo/smt-conf smt
 
-	 # install logrotate file
+	# install logrotate file
 	insinto /etc/logrotate.d
 	newins gentoo/smt-logrotate smt
 
@@ -52,7 +63,4 @@ src_install() {
 	keepdir $dirs
 	fowners smt:smt $dirs
 	fperms 775 $dirs
-
-	# docs
-	dodoc README CHANGES
 }
