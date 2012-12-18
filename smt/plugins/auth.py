@@ -27,6 +27,7 @@ class AuthFailPlugin(Plugin):
         name        --- Name of the plugin.
         update_interval --- Interval in seconds in which the sensors should be read.
         log_file    --- Path to log file.
+        encoding    --- Encoding of the log file.
         warning     --- Warning limit for total rate of authentication failures.
         critical    --- Critical limit for total rate of authentication failures.
 
@@ -43,6 +44,8 @@ class AuthFailPlugin(Plugin):
 
     # Path to log file.
     log_file = "/var/log/auth.log"
+    # Encoding of the log file.
+    encoding = "utf-8"
 
     # Warning limit for total rate of authentication failures.
     warning = "0.02"
@@ -81,7 +84,7 @@ class AuthFailPlugin(Plugin):
         values = {}
         for name in self.datasource_names:
             values[name] = 0
-        with open(self.log_file) as fp:
+        with open(self.log_file, encoding=self.encoding) as fp:
             for line in fp:
                 match = re.search("pam_unix\(([^:]+):auth\): authentication failure;", line)
                 if match is not None:
