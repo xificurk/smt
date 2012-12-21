@@ -1,6 +1,9 @@
 CHANGES
 ============================================================================
 
+    [CHG] AuthFail plugin: Add option for encoding of log file.
+    [CHG] Migrate Gentoo ebuild to distutils-r1, install scripts to /usr/sbin.
+
 Release 0.1.2 (2012-11-21)
     [CHG] Provide more info about datasources when checking their limits.
     [ADD] AuthFail plugin.
