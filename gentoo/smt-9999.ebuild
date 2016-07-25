@@ -5,7 +5,7 @@
 EAPI="5"
 
 EGIT_REPO_URI="git://github.com/xificurk/smt.git"
-PYTHON_COMPAT=( python3_1 python3_2 )
+PYTHON_COMPAT=( python3_1 python3_2 python3_3 python3_4 )
 
 inherit distutils-r1 git-2 user
 
@@ -34,11 +34,11 @@ python_install() {
 	# install scripts
 	local python_scriptroot=/usr/sbin
 	python_doscript bin/smtd
-	fowners smt:smt "${python_scriptroot}/smtd-${EPYTHON}"
-	fperms 750 "${python_scriptroot}/smtd-${EPYTHON}"
+	fowners smt:smt "/usr/lib/python-exec/${EPYTHON}/smtd"
+	fperms 750 "/usr/lib/python-exec/${EPYTHON}/smtd"
 	python_doscript bin/smt-limits
-	fowners smt:smt "${python_scriptroot}/smt-limits-${EPYTHON}"
-	fperms 750 "${python_scriptroot}/smt-limits-${EPYTHON}"
+	fowners smt:smt "/usr/lib/python-exec/${EPYTHON}/smt-limits"
+	fperms 750 "/usr/lib/python-exec/${EPYTHON}/smt-limits"
 }
 
 src_install() {
