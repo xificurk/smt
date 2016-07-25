@@ -20,7 +20,7 @@ IUSE=""
 DEPEND=""
 RDEPEND="net-analyzer/rrdtool"
 
-DOCS=( README CHANGES )
+DOCS=( README.md CHANGES )
 
 
 pkg_setup() {
