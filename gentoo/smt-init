@@ -18,7 +18,7 @@ start() {
 	fi
 
 	# Start the process as a daemon and record the pid number
-	start-stop-daemon --start -b --pidfile "/var/run/smt.pid" --make-pidfile -1 /var/log/smt.log -2 /var/log/smt.log $DAEMON_OPTS --exec /usr/sbin/smtd -- $SMT_OPTS
+	start-stop-daemon --start -b --pidfile "/var/run/smt.pid" --make-pidfile -1 /var/log/smt.log -2 /var/log/smt.log $DAEMON_OPTS --exec /usr/bin/smtd -- $SMT_OPTS
 
 	# Output success or failure
 	eend $?
