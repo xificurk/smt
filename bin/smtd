@@ -9,12 +9,11 @@ Functions:
 """
 
 __author__ = "Petr Morávek (petr@pada.cz)"
-__copyright__ = "Copyright (C) 2012 Petr Morávek"
+__copyright__ = "Copyright (C) 2012-2024 Petr Morávek"
 __license__ = "LGPL 3.0"
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
-import imp
 import logging
 from optparse import IndentedHelpFormatter, OptionGroup, OptionParser
 import os.path
@@ -50,17 +49,13 @@ def run(plugins_dir):
 
     # Let's load the plugins
     try:
-        fp = None
-        fp, pathname, description = imp.find_module("plugins", [plugins_dir])
-        plugins = imp.load_module("plugins", fp, pathname, description)
+        sys.path.insert(0, plugins_dir)
+        import plugins
+        sys.path.pop(0)
     except Exception as e:
         log.exception(e)
         log.critical("Could not find valid plugins module in {}".format(plugins_dir))
         raise SystemExit(1)
-    finally:
-        # Since we may exit via an exception, close fp explicitly.
-        if fp:
-            fp.close()
 
     try:
         filenames = set()
